@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { Agent, ContentBlock, TextBlock, BedrockModel } from "@strands-agents/sdk";
-import { getCurrentWeatherTool } from "@/app/tools/openWeather";
+import { getForecastTool } from "@/app/tools/openMeteo";
 import { getLocationTool } from "@/app/tools/nominatim";
 interface Message {
   id: string;
@@ -43,14 +43,14 @@ export default function Chat() {
         const systemPrompt = `
         あなたは天気予報を行うエージェントです。
         以下のルールに従ってください。
-        - 天気予報を行う場合は、openWeatherToolを使用してください。
-        - 位置情報を取得する場合は、nominatimToolを使用して取得したものを使用してください。
+        - 現在の天気を取得する場合は、getForecastToolを使用してください。
+        - 位置情報を取得する場合は、getLocationToolを使用して取得したものを使用してください。
         - 位置情報の検索するときのqueryは、必ずローマ字表記にしてください。
         `;
         const newAgent = new Agent({
           model: bedrockModel,
           systemPrompt: systemPrompt,
-          tools: [getCurrentWeatherTool, getLocationTool],
+          tools: [getForecastTool, getLocationTool],
         });
 
         setAgent(newAgent);
