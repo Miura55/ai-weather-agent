@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useAuthenticator } from '@aws-amplify/ui-react';
-import { Agent, ContentBlock, TextBlock } from "@strands-agents/sdk";
+import { fetchAuthSession } from 'aws-amplify/auth';
+import { Agent, ContentBlock, TextBlock, BedrockModel } from "@strands-agents/sdk";
 
 interface Message {
   id: string;
@@ -11,12 +12,47 @@ interface Message {
   timestamp: Date;
 }
 
-const agent = new Agent({
-  systemPrompt: "あなたは天気予報を行うエージェントです。",
-});
-
 export default function Chat() {
   const { signOut } = useAuthenticator();
+  const [agent, setAgent] = useState<Agent | null>(null);
+
+  useEffect(() => {
+    const initializeAgent = async () => {
+      try {
+        // Amplify Authから認証情報を取得
+        const session = await fetchAuthSession();
+        
+        if (!session.credentials) {
+          console.error("認証情報が取得できませんでした");
+          return;
+        }
+
+        // BedrockModelを認証情報付きで初期化
+        const bedrockModel = new BedrockModel({
+          region: 'ap-northeast-1',
+          clientConfig: {
+            credentials: {
+              accessKeyId: session.credentials.accessKeyId!,
+              secretAccessKey: session.credentials.secretAccessKey!,
+              sessionToken: session.credentials.sessionToken,
+            },
+          },
+        });
+
+        // Agentを初期化
+        const newAgent = new Agent({
+          model: bedrockModel,
+          systemPrompt: "あなたは天気予報を行うエージェントです。",
+        });
+
+        setAgent(newAgent);
+      } catch (error) {
+        console.error("Agentの初期化に失敗しました:", error);
+      }
+    };
+
+    initializeAgent();
+  }, []);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -54,8 +90,19 @@ export default function Chat() {
     setInput("");
     setIsLoading(true);
 
+    if (!agent) {
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: [new TextBlock("エージェントが初期化されていません。しばらく待ってから再度お試しください。")],
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      // ここでAPI呼び出しを行う予定
       const response = await agent.invoke(input);
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
