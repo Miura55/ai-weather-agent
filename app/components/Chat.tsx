@@ -2,13 +2,18 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useAuthenticator } from '@aws-amplify/ui-react';
+import { Agent, ContentBlock, TextBlock } from "@strands-agents/sdk";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
-  content: string;
+  content: ContentBlock[];
   timestamp: Date;
 }
+
+const agent = new Agent({
+  systemPrompt: "あなたは天気予報を行うエージェントです。",
+});
 
 export default function Chat() {
   const { signOut } = useAuthenticator();
@@ -16,7 +21,9 @@ export default function Chat() {
     {
       id: "1",
       role: "assistant",
-      content: "こんにちは！天気についてお聞きしたいことがあれば、お気軽にどうぞ。",
+      content: [
+        new TextBlock('こんにちは！天気についてお聞きしたいことがあれば、お気軽にどうぞ。'),
+      ],
       timestamp: new Date(),
     },
   ]);
@@ -39,7 +46,7 @@ export default function Chat() {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input.trim(),
+      content: [new TextBlock(input.trim())],
       timestamp: new Date(),
     };
 
@@ -47,18 +54,28 @@ export default function Chat() {
     setInput("");
     setIsLoading(true);
 
-    // ここでAPI呼び出しを行う予定
-    // 現在は模擬的な応答を返す
-    setTimeout(() => {
+    try {
+      // ここでAPI呼び出しを行う予定
+      const response = await agent.invoke(input);
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "ご質問ありがとうございます。天気情報を取得中です...",
+        content: response.lastMessage?.content ?? [],
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error("Error invoking agent:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: [new TextBlock("エラーが発生しました。もう一度お試しください。")],
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -100,9 +117,28 @@ export default function Chat() {
                     : "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-50"
                 }`}
               >
-                <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-                  {message.content}
-                </p>
+                <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                  {message.content.map((content, index) => {
+                    if (content.type === "textBlock") {
+                      return <p key={`${message.id}-${index}`}>{content.text}</p>;
+                    }
+                    if (content.type === "toolUseBlock") {
+                      return (
+                        <p key={`${message.id}-${index}`} className="text-xs italic opacity-75">
+                          ツール使用: {content.name}
+                        </p>
+                      );
+                    }
+                    if (content.type === "toolResultBlock") {
+                      return (
+                        <p key={`${message.id}-${index}`} className="text-xs italic opacity-75">
+                          ツール結果: {content.status === "success" ? "成功" : "エラー"}
+                        </p>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
                 <p
                   className={`mt-1 text-xs ${
                     message.role === "user"
