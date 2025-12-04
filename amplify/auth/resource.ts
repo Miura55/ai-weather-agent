@@ -8,4 +8,3 @@ export const auth = defineAuth({
     'user'
   ],
 });
-

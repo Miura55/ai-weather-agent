@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import ConfigureAmplifyClientSide from "./components/ConfigureAmplify";
+import ConfigureAmplifyClientSide from "@/app/components/ConfigureAmplify";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

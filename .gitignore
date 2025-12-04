@@ -41,5 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 # amplify
-amplify_outputs.json
 .amplify
+amplify_outputs*
+amplifyconfiguration*

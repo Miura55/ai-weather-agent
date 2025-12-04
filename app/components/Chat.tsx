@@ -45,7 +45,7 @@ export default function Chat() {
         以下のルールに従ってください。
         - 現在の天気を取得する場合は、getForecastToolを使用してください。
         - 位置情報を取得する場合は、getLocationToolを使用して取得したものを使用してください。
-        - 位置情報の検索するときのqueryは、必ずローマ字表記にしてください。
+        - 位置情報の検索するときのqueryは、必ず英語表記してください。
         `;
         const newAgent = new Agent({
           model: bedrockModel,
@@ -249,4 +249,3 @@ export default function Chat() {
     </div>
   );
 }
-
