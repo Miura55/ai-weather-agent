@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 interface Message {
   id: string;
@@ -10,6 +11,7 @@ interface Message {
 }
 
 export default function Chat() {
+  const { signOut } = useAuthenticator();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -63,12 +65,22 @@ export default function Chat() {
     <div className="flex h-screen flex-col bg-zinc-50 dark:bg-black">
       {/* ヘッダー */}
       <header className="border-b border-zinc-200 bg-white px-6 py-4 dark:border-zinc-800 dark:bg-zinc-950">
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          天気エージェント
-        </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          天気について何でもお聞きください
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+              天気エージェント
+            </h1>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              天気について何でもお聞きください
+            </p>
+          </div>
+          <button
+            onClick={() => signOut()}
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:focus:ring-offset-zinc-950"
+          >
+            ログアウト
+          </button>
+        </div>
       </header>
 
       {/* メッセージエリア */}
