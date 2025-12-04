@@ -12,9 +12,7 @@ backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(
     statements: [
       new PolicyStatement({
         actions: [
-          'bedrock:InvokeModel',
-          'bedrock:InvokeModelWithResponseStream',
-          'bedrock:ListFoundationModels',
+          'bedrock:InvokeModel*',
         ],
         resources: ['*'],
       }),
