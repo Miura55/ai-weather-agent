@@ -177,7 +177,6 @@ export default function Chat() {
                 <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
                   {message.content.map((content, index) => {
                     if (content.type === "textBlock") {
-                      // return <p key={`${message.id}-${index}`}>{content.text}</p>;
                       return (
                         <Markdown remarkPlugins={[remarkGfm]} key={`${message.id}-${index}`}>
                           {content.text}
