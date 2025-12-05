@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { Agent, ContentBlock, TextBlock, BedrockModel } from "@strands-agents/sdk";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { getForecastTool } from "@/app/tools/openMeteo";
 import { getLocationTool } from "@/app/tools/nominatim";
 interface Message {
@@ -175,21 +177,12 @@ export default function Chat() {
                 <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
                   {message.content.map((content, index) => {
                     if (content.type === "textBlock") {
-                      return <p key={`${message.id}-${index}`}>{content.text}</p>;
-                    }
-                    if (content.type === "toolUseBlock") {
+                      // return <p key={`${message.id}-${index}`}>{content.text}</p>;
                       return (
-                        <p key={`${message.id}-${index}`} className="text-xs italic opacity-75">
-                          ツール使用: {content.name}
-                        </p>
-                      );
-                    }
-                    if (content.type === "toolResultBlock") {
-                      return (
-                        <p key={`${message.id}-${index}`} className="text-xs italic opacity-75">
-                          ツール結果: {content.status === "success" ? "成功" : "エラー"}
-                        </p>
-                      );
+                        <Markdown remarkPlugins={[remarkGfm]} key={`${message.id}-${index}`}>
+                          {content.text}
+                        </Markdown>
+                      )
                     }
                     return null;
                   })}
